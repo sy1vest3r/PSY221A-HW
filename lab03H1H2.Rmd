@@ -1,42 +1,42 @@
 ---
-title: 'PSY221A: Data Validation and Wrangling'
-author: "Your Name"
+title: 'PSY221A_dataProcessing_SRB'
+author: "Sylvie Bass"
 date: "`r Sys.Date()`"
 output:
   html_document:
     toc: true
     toc_depth: 2
+    editor_options:
+      chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
 
 ```
 
-H1: Points allocated to a partner's physical attractiveness differ by sex at birth.
+H1: The perceived morality of infidelity (IV) will effect willingness to marry without love (DV).
 
-H2: Confidence in finding a new partner is associated with relationship commitment.
+H2: Sex (categorical IV) will affect time spent dressing well (DV).
 
 ## 1. Load the package and data
 
 ```{r load, message=FALSE}
 #load the codebook package
-
+install.packages("codebook")
+library(codebook)
 
 #load data/raw/data_doctored.csv
-
+raw <- read.csv("~/R Studio/PSY 221A/PSY221A-HW/lab02_files/data_doctored.csv")
 
 #check row and column counts, and inspect the first few rows
 
+dim(raw)
+head(raw)
+str(raw)
 
+#make data with ID, sex at birth, two morality items, time spent on dressing, and love opinion would you marry; keep raw unchanged
 
-#make data with ID, sex at birth, relationship status, all six preference items, qoa, and prqc_4-6; keep raw unchanged
-
-
-
-
-
-
-
+data <- raw[,c("ResponseId","Sex_birth","infmoral_sex","infmoral_emo","Love_would_you_marry_1","Time_A_dress_1")]
 
 
 ```
@@ -47,16 +47,16 @@ H2: Confidence in finding a new partner is associated with relationship commitme
 ```{r participant_ids}
 
 #count na
-
+sum(is.na(data$ResponseId))
 #count blank
-
+sum(data$ResponseId=="",na.rm=TRUE)
 #count duplicates
-
+sum(duplicated(data$ResponseId))
 #inspect records with missing or blank IDs
-
-
+missingID <- which(is.na(data$ResponseId))
+print(data[missingID,])
 #remove the known empty record with no ID, then check the row count
-
+data <- data[!is.na(data$ResponseId),]
 
 ```
 
@@ -65,104 +65,101 @@ H2: Confidence in finding a new partner is associated with relationship commitme
 
 ```{r sex_at_birth}
 # codebook: 0 = Male, 1 = Female, 2 = Intersex
-
+table(data$Sex_birth,useNA="ifany")
 #turn Sex_birth into a factor with labels Male, Female, and Intersex
-
-
-
-
-
+data$Sex_birth <- factor(data$Sex_birth, 
+                         levels=c(0,1,2),
+                         labels=c("Male","Female","Intersex"))
 
 ```
 
 
-## 4. Validate relative preference
+## 4. Validate Perceived Morality
 
-```{r preference_vars}
-#group all six preference_imp_ variables
+```{r percMoral}
+#group two infmoral_sex and infmoral_emo
+summary(data$infmoral_emo)
+summary(data$infmoral_sex)
 
-
-
+percMoral <- c("infmoral_sex","infmoral_emo")
 #see summary of variables
-
-#count NAs
-
-
+summary(data[,percMoral])
 #calculate total score; leave the total NA if any item is missing
-
-
-
-#count those that do not sum to 30
-
-
-#check that each observed allocation is between 0 and 30
-
-
-
-
-
-#define prefValid: total present, total equals 30, and each item in range
-
-
-
-#make h1Data with ID, Sex_birth, and preference_imp_physat
-
-
+data$percMoral <- 
+  rowSums(data[,percMoral],na.rm=FALSE)
+summary(data$percMoral)
+#count those that do not sum to 7 bc that is the max for the infmoral scales
+sum(data$percMoral !=7 & !is.na(data$percMoral))
+#check that each observed allocation is between 0 and 7
+data$prefRange <- rowSums(
+  data[,percMoral] < 0 | data[,percMoral] > 7,
+  na.rm=TRUE
+) == FALSE
+#define percMoralValid: total present, total equals 7, and each item in range
+data$prefRange <- rowSums(
+  data[,percMoral] < 0 | data[,percMoral] > 7,
+  na.rm=TRUE
+) == FALSE
 
 ```
 
 
-## 5. qoa & commitment
-```{r qoa_commitment}
-#make relData for respondents currently in a relationship
-#include Dating (1), In a committed relationship (2), and Married (3)
-
-
-
-
-#define the items to check; all four use response codes 1-7
-#qoa: 1=Strongly disagree, 7=Strongly agree
-#prqc_4-6: 1=Not at all, 7=Extremely
-
-
-#check the summaries and missing responses
-
-
-
-#inspect the response frequencies for each item
-
-
-
-
-
-#replace any codes outside 1-7 with NA
-
-
-
-
+## 5. Validate time spent dressing well
+```{r Time_A_dress_1}
+# taking a look at the variable
+table(data$Time_A_dress_1,useNA="ifany")
+# check for NAs, blanks
+sum(is.na(data$Time_A_dress_1))
+sum(data$Time_A_dress_1=="",na.rm=TRUE)
+# check for empty records
+missingTime <- which(is.na(data$Time_A_dress_1))
+print(data[missingTime,])
+# removing the known empty NAs
+data <- data[!is.na(data$Time_A_dress_1),]
+#double-checking that the stored data values are within the bounds of reason (time can only be measured 0-360)
+sum(data$Time_A_dress_1 <0, na.rm = TRUE)
+sum(data$Time_A_dress_1 >360, na.rm = TRUE)
+#make h2Data with ID, Sex_birth, and time spent dressing
+table(data$Time_A_dress_1)
+h2Data <- data[!is.na(data$Time_A_dress_1) & !is.na(data$Sex_birth), c("ResponseId","Sex_birth","Time_A_dress_1")]
+# check the h2Data
+dim(h2Data)
+head(h2Data)
+str(h2Data)
+summary(h2Data)
+colSums(is.na(h2Data))
+table(h2Data$Sex_birth,useNA="ifany")
+range(h2Data$Time_A_dress_1)
+sum(duplicated(h2Data$ResponseId))
+# looks good!!! yay coding
 ```
 
-## 6. Calculate commitment
+## 6. Validate willingness to marry
 
-```{r commitment}
-#group commitment variables (prqc_4, prqc_5, and prqc_6)
-#these ask how committed, dedicated, and devoted respondents are
-#none requires reverse coding
-
-
-
-#calculate commitment as the mean of all three items
-#for NAs, conduct available item mean
-
-
-#check the score
-
-
-#make h2Data with ID, qoa, and commitment
-#keep participants with both qoa and commitment present
-#do not apply the H1 preference filter to this hypothesis
-
-
+```{r matrimonial directedness}
+# taking a look at the variable
+table(data$Love_would_you_marry_1,useNA="ifany")
+# check for NAs, blanks
+sum(is.na(data$Love_would_you_marry_1))
+sum(data$Love_would_you_marry_1=="",na.rm=TRUE)
+# check for empty records
+missingWillingness <- which(is.na(data$Love_would_you_marry_1))
+print(data[missingWillingness,])
+# removing the known empty NAs
+data <- data[!is.na(data$Love_would_you_marry_1),]
+#double-checking that the stored data values are within the bounds of reason (measurement is 0-100)
+sum(data$Love_would_you_marry_1 <0, na.rm = TRUE)
+sum(data$Love_would_you_marry_1 >100, na.rm = TRUE)
+#make h1Data with ID, perceived morality of infidelity, and willingness to marry
+table(data$Love_would_you_marry_1)
+h1Data <- data[!is.na(data$Love_would_you_marry_1) & !is.na(data$percMoralTotal), c("ResponseId","Love_would_you_marry_1","percMoralTotal")]
+# I want to change the names of the data
+names(h1Data) <- c("ResponseId","Willingness to marry","Perceived morality")
+# check the h1Data
+dim(h1Data)
+head(h1Data)
+str(h1Data)
+summary(h1Data)
 ```
 
 ## 7. Check the final tables
@@ -196,24 +193,22 @@ display the formatted codebooks.
 
 ```{r variable_labels}
 #add a description to each h1Data column, in column order
-#include the source codes, meaning, and units
 var_label(h1Data) <- c(
   "Unique participant ID (ResponseId)",
-  "Sex at birth: original codes 0=Male, 1=Female, 2=Intersex; now stored as a factor",
-  "Points allocated to partner physical attractiveness; 0-30 points from a 30-point budget; zero is valid"
+  "Perceived morality of infidelity; 1=Strongly disagree, 7=Strongly agree",
+  "Perceived morality of infidelity: mean of available perceived morality of infidelity questions, each 1=Not at all wrong 7=Extremely; no reverse coding; at least one valid response required", "Willingness to marry without love/matrimonial directedness; 0-100 with 0 representing that they would not marry and 100 representing they absolutely would"
 )
 
 #add a description to each h2Data column, in column order
-#include response anchors and the commitment scoring rule
+#include the source codes, meaning, and units
 var_label(h2Data) <- c(
   "Unique participant ID (ResponseId)",
-  "Confidence in finding another appealing partner if the current relationship ended; 1=Strongly disagree, 7=Strongly agree",
-  "Relationship commitment: mean of available prqc_4-6 responses, each 1=Not at all to 7=Extremely; no reverse coding; at least one valid response required"
+  "Sex at birth: original codes 0=Male, 1=Female, 2=Intersex; now stored as a factor",
+  "Daily time spent dressing well; 0-360 questionnaire with 360 representing 6 hours or more; zero is valid"
 )
-
 ```
 
-H1 includes participants with an ID, a valid sex-at-birth category, and six
+H2 includes participants with an ID, a valid sex-at-birth category, and six
 allocations between 0 and 30 that total 30. Factor level numbers in the
 generated table are internal R positions, not the original survey codes.
 
@@ -223,8 +218,7 @@ compact_codebook(h1Data)
 
 ```
 
-H2 includes participants with an ID, relationship status 1, 2, or 3, and
-valid nonmissing qoa and at least one valid commitment response.
+H1 includes participants with an ID, perceived morality (infmoral_sex and infmoral_emo), and willingness to marry without love.
 
 ```{r h2_codebook}
 #generate the h2Data codebook
@@ -235,16 +229,13 @@ compact_codebook(h2Data)
 ## 9. Save the final tables
 
 ```{r save}
-#create data/processed_data if needed
-dir.create("data/processed_data",recursive=T,showWarnings=F)
-
 #save h1Data and h2Data without an extra row-number column
-write.csv(h1Data,"data/processed_data/practice_h1.csv",row.names=F)
-write.csv(h2Data,"data/processed_data/practice_h2.csv",row.names=F)
+write.csv(h1Data,"data/processed_data/h1.csv",row.names=F)
+write.csv(h2Data,"data/processed_data/h2.csv",row.names=F)
 
 #read the files back and confirm their dimensions
-h1Saved <- read.csv("data/processed_data/practice_h1.csv")
-h2Saved <- read.csv("data/processed_data/practice_h2.csv")
+h1Saved <- read.csv("data/processed_data/h1.csv")
+h2Saved <- read.csv("data/processed_data/h2.csv")
 dim(h1Saved)
 dim(h2Saved)
 
