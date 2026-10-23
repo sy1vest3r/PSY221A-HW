@@ -1,0 +1,251 @@
+---
+title: 'PSY221A: Data Validation and Wrangling'
+author: "Your Name"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+---
+
+```{r setup, include=FALSE}
+
+```
+
+H1: Points allocated to a partner's physical attractiveness differ by sex at birth.
+
+H2: Confidence in finding a new partner is associated with relationship commitment.
+
+## 1. Load the package and data
+
+```{r load, message=FALSE}
+#load the codebook package
+
+
+#load data/raw/data_doctored.csv
+
+
+#check row and column counts, and inspect the first few rows
+
+
+
+#make data with ID, sex at birth, relationship status, all six preference items, qoa, and prqc_4-6; keep raw unchanged
+
+
+
+
+
+
+
+
+
+```
+
+
+## 2. Check participant IDs
+
+```{r participant_ids}
+
+#count na
+
+#count blank
+
+#count duplicates
+
+#inspect records with missing or blank IDs
+
+
+#remove the known empty record with no ID, then check the row count
+
+
+```
+
+
+## 3. Recode sex at birth
+
+```{r sex_at_birth}
+# codebook: 0 = Male, 1 = Female, 2 = Intersex
+
+#turn Sex_birth into a factor with labels Male, Female, and Intersex
+
+
+
+
+
+
+```
+
+
+## 4. Validate relative preference
+
+```{r preference_vars}
+#group all six preference_imp_ variables
+
+
+
+#see summary of variables
+
+#count NAs
+
+
+#calculate total score; leave the total NA if any item is missing
+
+
+
+#count those that do not sum to 30
+
+
+#check that each observed allocation is between 0 and 30
+
+
+
+
+
+#define prefValid: total present, total equals 30, and each item in range
+
+
+
+#make h1Data with ID, Sex_birth, and preference_imp_physat
+
+
+
+```
+
+
+## 5. qoa & commitment
+```{r qoa_commitment}
+#make relData for respondents currently in a relationship
+#include Dating (1), In a committed relationship (2), and Married (3)
+
+
+
+
+#define the items to check; all four use response codes 1-7
+#qoa: 1=Strongly disagree, 7=Strongly agree
+#prqc_4-6: 1=Not at all, 7=Extremely
+
+
+#check the summaries and missing responses
+
+
+
+#inspect the response frequencies for each item
+
+
+
+
+
+#replace any codes outside 1-7 with NA
+
+
+
+
+```
+
+## 6. Calculate commitment
+
+```{r commitment}
+#group commitment variables (prqc_4, prqc_5, and prqc_6)
+#these ask how committed, dedicated, and devoted respondents are
+#none requires reverse coding
+
+
+
+#calculate commitment as the mean of all three items
+#for NAs, conduct available item mean
+
+
+#check the score
+
+
+#make h2Data with ID, qoa, and commitment
+#keep participants with both qoa and commitment present
+#do not apply the H1 preference filter to this hypothesis
+
+
+```
+
+## 7. Check the final tables
+
+```{r final_tables}
+#check rows, columns, types, and missing values in h1Data
+#one row per participant, one column per variable
+dim(h1Data)
+str(h1Data)
+head(h1Data)
+colSums(is.na(h1Data))
+table(h1Data$Sex_birth,useNA="ifany")
+range(h1Data$preference_imp_physat)
+sum(duplicated(h1Data$ResponseId))
+
+#repeat the checks for h2Data; both scores should be within 1-7
+dim(h2Data)
+str(h2Data)
+head(h2Data)
+colSums(is.na(h2Data))
+range(h2Data$qoa)
+range(h2Data$commitment)
+sum(duplicated(h2Data$ResponseId))
+```
+
+## 8. Add labels and generate codebooks
+
+The descriptions come from the original codebook and our scoring decisions.
+`compact_codebook()` adds summaries from the actual data. Knit the Rmd to
+display the formatted codebooks.
+
+```{r variable_labels}
+#add a description to each h1Data column, in column order
+#include the source codes, meaning, and units
+var_label(h1Data) <- c(
+  "Unique participant ID (ResponseId)",
+  "Sex at birth: original codes 0=Male, 1=Female, 2=Intersex; now stored as a factor",
+  "Points allocated to partner physical attractiveness; 0-30 points from a 30-point budget; zero is valid"
+)
+
+#add a description to each h2Data column, in column order
+#include response anchors and the commitment scoring rule
+var_label(h2Data) <- c(
+  "Unique participant ID (ResponseId)",
+  "Confidence in finding another appealing partner if the current relationship ended; 1=Strongly disagree, 7=Strongly agree",
+  "Relationship commitment: mean of available prqc_4-6 responses, each 1=Not at all to 7=Extremely; no reverse coding; at least one valid response required"
+)
+
+```
+
+H1 includes participants with an ID, a valid sex-at-birth category, and six
+allocations between 0 and 30 that total 30. Factor level numbers in the
+generated table are internal R positions, not the original survey codes.
+
+```{r h1_codebook}
+#generate the h1Data codebook
+compact_codebook(h1Data)
+
+```
+
+H2 includes participants with an ID, relationship status 1, 2, or 3, and
+valid nonmissing qoa and at least one valid commitment response.
+
+```{r h2_codebook}
+#generate the h2Data codebook
+compact_codebook(h2Data)
+
+```
+
+## 9. Save the final tables
+
+```{r save}
+#create data/processed_data if needed
+dir.create("data/processed_data",recursive=T,showWarnings=F)
+
+#save h1Data and h2Data without an extra row-number column
+write.csv(h1Data,"data/processed_data/practice_h1.csv",row.names=F)
+write.csv(h2Data,"data/processed_data/practice_h2.csv",row.names=F)
+
+#read the files back and confirm their dimensions
+h1Saved <- read.csv("data/processed_data/practice_h1.csv")
+h2Saved <- read.csv("data/processed_data/practice_h2.csv")
+dim(h1Saved)
+dim(h2Saved)
+
+```
