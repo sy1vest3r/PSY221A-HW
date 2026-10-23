@@ -6,12 +6,10 @@ output:
   html_document:
     toc: true
     toc_depth: 2
-    editor_options:
-      chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
-
+knitr::opts_chunk$set(echo = TRUE)
 ```
 
 H1: The perceived morality of infidelity (IV) will effect willingness to marry without love (DV).
@@ -22,7 +20,6 @@ H2: Sex (categorical IV) will affect time spent dressing well (DV).
 
 ```{r load, message=FALSE}
 #load the codebook package
-install.packages("codebook")
 library(codebook)
 
 #load data/raw/data_doctored.csv
@@ -74,32 +71,19 @@ data$Sex_birth <- factor(data$Sex_birth,
 ```
 
 
-## 4. Validate Perceived Morality
+## 4. Overall Perceived Morality
 
 ```{r percMoral}
 #group two infmoral_sex and infmoral_emo
 summary(data$infmoral_emo)
 summary(data$infmoral_sex)
+table(data$infmoral_sex, useNA="ifany")
+table(data$infmoral_emo, useNA="ifany")
 
-percMoral <- c("infmoral_sex","infmoral_emo")
-#see summary of variables
-summary(data[,percMoral])
-#calculate total score; leave the total NA if any item is missing
-data$percMoral <- 
-  rowSums(data[,percMoral],na.rm=FALSE)
+percMoralVars <- c("infmoral_sex","infmoral_emo")
+# calculate the 
+data$percMoral <- rowMeans(data[,c("infmoral_sex","infmoral_emo")], na.rm = FALSE)
 summary(data$percMoral)
-#count those that do not sum to 7 bc that is the max for the infmoral scales
-sum(data$percMoral !=7 & !is.na(data$percMoral))
-#check that each observed allocation is between 0 and 7
-data$prefRange <- rowSums(
-  data[,percMoral] < 0 | data[,percMoral] > 7,
-  na.rm=TRUE
-) == FALSE
-#define percMoralValid: total present, total equals 7, and each item in range
-data$prefRange <- rowSums(
-  data[,percMoral] < 0 | data[,percMoral] > 7,
-  na.rm=TRUE
-) == FALSE
 
 ```
 
@@ -152,7 +136,7 @@ sum(data$Love_would_you_marry_1 <0, na.rm = TRUE)
 sum(data$Love_would_you_marry_1 >100, na.rm = TRUE)
 #make h1Data with ID, perceived morality of infidelity, and willingness to marry
 table(data$Love_would_you_marry_1)
-h1Data <- data[!is.na(data$Love_would_you_marry_1) & !is.na(data$percMoralTotal), c("ResponseId","Love_would_you_marry_1","percMoralTotal")]
+h1Data <- data[!is.na(data$Love_would_you_marry_1) & !is.na(data$percMoral), c("ResponseId","Love_would_you_marry_1","percMoral")]
 # I want to change the names of the data
 names(h1Data) <- c("ResponseId","Willingness to marry","Perceived morality")
 # check the h1Data
@@ -165,24 +149,24 @@ summary(h1Data)
 ## 7. Check the final tables
 
 ```{r final_tables}
-#check rows, columns, types, and missing values in h1Data
+#check rows, columns, types, and missing values in h2Data
 #one row per participant, one column per variable
-dim(h1Data)
-str(h1Data)
-head(h1Data)
-colSums(is.na(h1Data))
-table(h1Data$Sex_birth,useNA="ifany")
-range(h1Data$preference_imp_physat)
-sum(duplicated(h1Data$ResponseId))
-
-#repeat the checks for h2Data; both scores should be within 1-7
 dim(h2Data)
 str(h2Data)
 head(h2Data)
 colSums(is.na(h2Data))
-range(h2Data$qoa)
-range(h2Data$commitment)
+table(h2Data$Sex_birth,useNA="ifany")
+range(h2Data$Time_A_dress_1)
 sum(duplicated(h2Data$ResponseId))
+
+#repeat the checks for h1Data; both scores should be within 1-7
+dim(h1Data)
+str(h1Data)
+head(h1Data)
+colSums(is.na(h1Data))
+range(h1Data$Love_would_you_marry_1)
+range(h1Data$percMoral)
+sum(duplicated(h1Data$ResponseId))
 ```
 
 ## 8. Add labels and generate codebooks
@@ -193,9 +177,9 @@ display the formatted codebooks.
 
 ```{r variable_labels}
 #add a description to each h1Data column, in column order
+library(codebook)
 var_label(h1Data) <- c(
   "Unique participant ID (ResponseId)",
-  "Perceived morality of infidelity; 1=Strongly disagree, 7=Strongly agree",
   "Perceived morality of infidelity: mean of available perceived morality of infidelity questions, each 1=Not at all wrong 7=Extremely; no reverse coding; at least one valid response required", "Willingness to marry without love/matrimonial directedness; 0-100 with 0 representing that they would not marry and 100 representing they absolutely would"
 )
 
@@ -215,7 +199,6 @@ generated table are internal R positions, not the original survey codes.
 ```{r h1_codebook}
 #generate the h1Data codebook
 compact_codebook(h1Data)
-
 ```
 
 H1 includes participants with an ID, perceived morality (infmoral_sex and infmoral_emo), and willingness to marry without love.
@@ -223,12 +206,14 @@ H1 includes participants with an ID, perceived morality (infmoral_sex and infmor
 ```{r h2_codebook}
 #generate the h2Data codebook
 compact_codebook(h2Data)
-
 ```
 
 ## 9. Save the final tables
 
 ```{r save}
+#create data/processed_data if needed
+dir.create("data/processed_data",recursive=T,showWarnings=F)
+
 #save h1Data and h2Data without an extra row-number column
 write.csv(h1Data,"data/processed_data/h1.csv",row.names=F)
 write.csv(h2Data,"data/processed_data/h2.csv",row.names=F)
