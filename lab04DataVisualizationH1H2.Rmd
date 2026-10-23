@@ -1,0 +1,150 @@
+---
+title: "lab04DataVisualizationH1H2"
+author: "Sylvie Bass"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Hypothesis
+
+H1: The perceived morality of infidelity (IV) will effect willingness to marry without love (DV).
+
+H2: Sex (categorical IV) will affect time spent dressing well (DV).
+
+```{r load package}
+library(codebook)
+raw <- read.csv("/Users/srb/R Studio/PSY 221A/PSY221A-HW/lab02_files/data_doctored.csv")
+```
+
+## Load the processed data
+
+```{r loadData}
+#load processed data
+library(ggplot2)
+library(ggrain)
+install.packages("ggrain")
+
+h1Data <- read.csv("/Users/srb/R Studio/PSY 221A/PSY221A-HW/data/processed_data/h1.csv")
+h2Data <- read.csv("/Users/srb/R Studio/PSY 221A//PSY221A-HW/data/processed_data/h2.csv")
+#reorganize categorical variable
+table(h2Data$Sex_birth)
+h2Data$Sex_birth <- factor(h2Data$Sex_birth,
+                           levels = c("Male","Female","Intersex"))
+
+```
+
+## H2 - Box Plot
+
+```{r H2Box}
+#Box plot
+#The line is the median; the box covers the middle 50% of responses (Q1-Q3).
+#Whiskers reach the most extreme observations within 1.5 IQR of the box edges.
+h2Box <- ggplot(data=h2Data,
+                aes(x=Sex_birth,
+                    y=Time_A_dress_1,
+                    fill=Sex_birth))+
+  geom_boxplot () +
+  labs(x="Sex assigned at birth",
+        y="Amount of time spent on dressing well",
+        title="Time spent dressing well by sex")+
+  theme_gray(base_size=8) #changes font size
+
+h2Box
+```
+
+## H1 - Violin Plot (with Box Plot)
+
+```{r H1Violin}
+#Violin Plot
+#Wider sections show where responses are more concentrated within each group.
+#The shape depends on smoothing; integer scores can create bumps.
+h1Viol <- ggplot(data=h1Data,
+                aes(x=Sex_birth,
+                    y=preference_imp_physat,
+                    fill=Sex_birth))+
+  labs(x="Sex assigned at birth",
+        y="Points allocated to partner physical attractiveness",
+        title="Points allocated to physical attractiveness by sex")+
+  theme_gray(base_size=8)+
+  geom_violin()+ #order doesn't usually matter
+  geom_boxplot(width=.12)
+
+
+h1Viol
+```
+
+## H1 - Raincloud Plot
+
+```{r H1Raincloud}
+#Raincloud Plot
+#A raincloud combines a half-violin, a box plot, and individual responses.
+h1Rain <- ggplot(data=h1Data,
+                aes(x=Sex_birth,
+                    y=preference_imp_physat,
+                    fill=Sex_birth))+
+  labs(x="Sex assigned at birth",
+        y="Points allocated to partner physical attractiveness",
+        title="Points allocated to physical attractiveness by sex",
+       fill="")+
+  geom_rain(alpha=.5)+
+  theme(minimal(base_size))
+
+h1Rain
+```
+
+## H2 - Scatter Plots
+
+```{r H2Scatter}
+#Scatter Plot; commitment is the composite variable
+h2Point <- ggplot(data=h2Data,
+                  aes(x=qoa,
+                      y=commitment))+
+  geom_point()+
+  labs(x="Confidence finding alternatives",
+       y="Commitment level",
+       title="Relationship between confidence finding alternatives and commitment level")+
+  theme_minimal(base_size = 8)
+
+h2Point
+
+#Plot looks weird... why?
+# They're on top of each other, and because of the composite variable and because qoa is only integers
+nrow(h2Data) #There's fifty thousand data points, but the graph wasn't showing it
+nrow(unique(h2Data[,c("qoa","commitment")]))
+
+#Jitter
+h2Jitter <- ggplot(data=h2Data,
+                  aes(x=qoa,
+                      y=commitment))+
+  geom_jitter(width=.12,height=.04,alpha=.04,size=.6)+
+    labs(x="Confidence finding alternatives",
+       y="Commitment level",
+       title="Relationship between confidence finding alternatives and commitment level")+
+  theme_minimal(base_size = 8)
+
+h2Jitter # know where data points are concentrated
+
+```
+
+## H2 - Smooth Line
+
+```{r}
+#Scatter Plot with line
+h2Line <- h2Jitter + geom_smooth(method= "lm")
+h2Line
+  
+```
+
+## Save figures
+
+```{r saveFigures}
+#Run after creating the plots. Save PNG files in the project's figures folder.
+dir.create("practiceFigures")
+ggsave("practiceFigures/H1_figures_rainCloud.png", plot = h1Rain, width=10, height=6, dpi=300)
+ggsave("practiceFigures/H2_digures_line.png", plot = h2Line, width=10, height=6, dpi=300)
+```
+
