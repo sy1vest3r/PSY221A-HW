@@ -23,24 +23,15 @@ H2: Sex (categorical IV) will affect time spent dressing well (DV).
 library(codebook)
 
 #load data/raw/data_doctored.csv
-###JK: Use a project-relative path so the script can run on another computer. ###
-# The current path points to a folder on your own computer.
-# Replace the read.csv() line below with:
-# raw <- read.csv("lab02_files/data_doctored.csv")
-###  End of comment ###
-
 raw <- read.csv("lab02_files/data_doctored.csv")
 
 #check row and column counts, and inspect the first few rows
-
 dim(raw)
 head(raw)
 str(raw)
 
 #make data with ID, sex at birth, two morality items, time spent on dressing, and willingness to marry
-
 #keep raw unchanged
-
 data <- raw[,c("ResponseId","Sex_birth","infmoral_sex","infmoral_emo","Love_would_you_marry_1","Time_A_dress_1")]
 
 
@@ -75,6 +66,7 @@ sum(duplicated(data$ResponseId))
 ```{r sex_at_birth}
 # codebook: 0 = Male, 1 = Female, 2 = Intersex
 table(data$Sex_birth,useNA="ifany")
+
 #turn Sex_birth into a factor with labels Male, Female, and Intersex
 data$Sex_birth <- factor(data$Sex_birth, 
                          levels=c(0,1,2),
@@ -110,23 +102,24 @@ summary(data$percMoral)
 ```{r Time_A_dress_1}
 # taking a look at the variable
 table(data$Time_A_dress_1,useNA="ifany")
+
 # check for NAs, blanks
 sum(is.na(data$Time_A_dress_1))
 sum(data$Time_A_dress_1=="",na.rm=TRUE)
+
 # check for empty records
 missingTime <- which(is.na(data$Time_A_dress_1))
 print(data[missingTime,])
-# removing the known empty NAs
+
+#no longer removing the participants from the shared data table
 
 #double-checking that the stored data values are within the bounds of reason (time can only be measured 0-360)
 sum(data$Time_A_dress_1 <0, na.rm = TRUE)
 sum(data$Time_A_dress_1 >360, na.rm = TRUE)
+```
 
-###JK: Do not remove missing dressing-time responses from the shared data table. ###
-# Dressing time is needed for H2, but it is not needed for H1, which uses infidelity morality and willingness to marry without love.
-# This line also removes 12,065 people who have the H1 responses you need.
-###  End of comment ###
-
+## 5a. Make H2 Data
+```{make_h2Data}
 #make h2Data with ID, Sex_birth, and time spent dressing
 table(data$Time_A_dress_1)
 h2Data <- data[!is.na(data$Time_A_dress_1) & !is.na(data$Sex_birth), c("ResponseId","Sex_birth","Time_A_dress_1")]
@@ -147,43 +140,36 @@ sum(duplicated(h2Data$ResponseId))
 ```{r matrimonial directedness}
 # taking a look at the variable
 table(data$Love_would_you_marry_1,useNA="ifany")
+
 # check for NAs, blanks
 sum(is.na(data$Love_would_you_marry_1))
 sum(data$Love_would_you_marry_1=="",na.rm=TRUE)
+
 # check for empty records
 missingWillingness <- which(is.na(data$Love_would_you_marry_1))
 print(data[missingWillingness,])
+
 # removing the known empty NAs
 data <- data[!is.na(data$Love_would_you_marry_1),]
+
 #double-checking that the stored data values are within the bounds of reason (measurement is 0-100)
 sum(data$Love_would_you_marry_1 <0, na.rm = TRUE)
 sum(data$Love_would_you_marry_1 >100, na.rm = TRUE)
+
 #make h1Data with ID, perceived morality of infidelity, and willingness to marry
 table(data$Love_would_you_marry_1)
 h1Data <- data[!is.na(data$Love_would_you_marry_1) & !is.na(data$percMoral), c("ResponseId","Love_would_you_marry_1","percMoral")]
-# I want to change the names of the data
 
-###JK: Renaming these columns makes the later checks using their original names stop working. ###
-# After this line, h1Data$Love_would_you_marry_1 and h1Data$percMoral return NULL because those names no longer exist.
-# Their range() checks then return Inf and -Inf, rather than checking your actual scores.
-# The simplest fix is to remove the names(h1Data) line below and keep the original column names.
-# Use var_label() to provide readable descriptions instead.
-# Then these checks will work:
-# range(h1Data$Love_would_you_marry_1)
-# range(h1Data$percMoral)
-# Willingness should range from 0 to 100, and the morality mean should range from 1 to 7; please update the final-check comment accordingly.
-###  End of comment ###
-
-names(h1Data) <- c("ResponseId","Willingness to marry","Perceived morality")
 # check the h1Data
 dim(h1Data)
 head(h1Data)
 str(h1Data)
 summary(h1Data)
+range(h1Data$Love_would_you_marry_1)
+range(h1Data$percMoral)
 ```
 
 ## 7. Check the final tables
-
 ```{r final_tables}
 #check rows, columns, types, and missing values in h2Data
 #one row per participant, one column per variable
@@ -206,63 +192,38 @@ sum(duplicated(h1Data$ResponseId))
 ```
 
 ## 8. Add labels and generate codebooks
-
 The descriptions come from the original codebook and our scoring decisions.
 `compact_codebook()` adds summaries from the actual data. Knit the Rmd to
 display the formatted codebooks.
-
 ```{r variable_labels}
 #add a description to each h1Data column, in column order
 library(codebook)
 
-###JK: The H1 labels are swapped, and the stated missing-data rule does not match your calculation. ###
-# The columns are ID, willingness to marry, and perceived morality, but the labels below put morality before willingness.
-# Your rowMeans(..., na.rm=FALSE) requires both morality items, whereas the current label says at least one response is enough.
-# Replace the H1 label assignment below with:
-# var_label(h1Data) <- c(
-#   "Unique participant ID (ResponseId)",
-#   "Willingness to marry without love: 0=Definitely would not, 100=Definitely would.",
-#   "Perceived wrongness of infidelity: mean of infmoral_sex and infmoral_emo; both responses required. Items range from 1=Not at all wrong to 7=Extremely wrong. No reversal; higher scores indicate greater perceived wrongness."
-# )
-###  End of comment ###
-
 var_label(h1Data) <- c(
-  "Unique participant ID (ResponseId)",
-  "Perceived morality of infidelity: mean of available perceived morality of infidelity questions, each 1=Not at all wrong 7=Extremely; no reverse coding; at least one valid response required", "Willingness to marry without love/matrimonial directedness; 0-100 with 0 representing that they would not marry and 100 representing they absolutely would"
-)
+   "Unique participant ID (ResponseId)", "Willingness to marry without love: 0=Definitely would not, 100=Definitely would.", "Perceived wrongness of infidelity: mean of infmoral_sex and infmoral_emo; both responses required. Items range from 1=Not at all wrong to 7=Extremely wrong. No reversal; higher scores indicate greater perceived wrongness." )
 
-#add a description to each h2Data column, in column order
-#include the source codes, meaning, and units
 var_label(h2Data) <- c(
   "Unique participant ID (ResponseId)",
-  "Sex at birth: original codes 0=Male, 1=Female, 2=Intersex; now stored as a factor",
-  "Daily time spent dressing well; 0-360 questionnaire with 360 representing 6 hours or more; zero is valid"
+  "Sex at birth (Sex_birth): original codes 0=Male, 1=Female, 2=Intersex; now stored as a factor",
+  "Daily time spent dressing well (Time_A_dress_1); 0-360 questionnaire with 360 representing 6 hours or more; zero is valid"
 )
 ```
 
-H2 includes participants with an ID, a valid sex-at-birth category, and six
-allocations between 0 and 30 that total 30. Factor level numbers in the
-generated table are internal R positions, not the original survey codes.
 
+H1 includes participants with an ID, perceived morality (infmoral_sex and infmoral_emo), and willingness to marry without love.
 ```{r h1_codebook}
 #generate the h1Data codebook
 compact_codebook(h1Data)
 ```
 
-H1 includes participants with an ID, perceived morality (infmoral_sex and infmoral_emo), and willingness to marry without love.
-
+H2 includes participants with an ID, a valid sex at birth assignment, and their reported time spent dressing well (Time_A_dress_1)
 ```{r h2_codebook}
-
-###JK: Please update the H2 inclusion description above the codebooks. ###
-# The sentence about six allocations totaling 30 is left over from the example and does not describe your H2.
-###  End of comment ###
 
 #generate the h2Data codebook
 compact_codebook(h2Data)
 ```
 
 ## 9. Save the final tables
-
 ```{r save}
 #create data/processed_data if needed
 dir.create("data/processed_data",recursive=T,showWarnings=F)
@@ -274,7 +235,11 @@ write.csv(h2Data,"data/processed_data/h2.csv",row.names=F)
 #read the files back and confirm their dimensions
 h1Saved <- read.csv("data/processed_data/h1.csv")
 h2Saved <- read.csv("data/processed_data/h2.csv")
+
 dim(h1Saved)
 dim(h2Saved)
+
+names(h1Saved)
+names(h2Saved)
 
 ```
