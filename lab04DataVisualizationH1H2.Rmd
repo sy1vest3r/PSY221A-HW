@@ -75,8 +75,8 @@ h2Box
 
 
 h1Point <- ggplot(data=h1Data, 
-                   aes(x = Perceived.morality, 
-                       y = Willingness.to.marry,
+                   aes(x = percMoral, 
+                       y = Love_would_you_marry_1,
                      title="Inherent Morality of Infidelity's influence on Willingness to marry without love")) +
    geom_jitter(width = .1, height = 0, alpha = .1) +
    geom_smooth(method = "lm") +
@@ -93,59 +93,14 @@ h1Point
 
 # The perceived morality of infidelity (IV) will effect willingness to marry without love (DV).
 h1Rain <- ggplot(data=h1Data,
-                aes(x=moral,
-                    y=willingness_marry,
-                    fill=moral))+
+                aes(x= factor(percMoral),
+                    y=Love_would_you_marry_1))+
   labs(x="Morality of Infidelity",
         y="Willingness to Marry without Love",
-        title="Inherent Morality of Infidelity's influence on Willingness to marry without love",
-       fill="Morality of Infidelity")+
-  geom_rain(alpha=.5)+
-  theme(minimal(base_size))
+        title="Inherent Morality of Infidelity's influence on Willingness to marry without love")+
+  geom_rain(alpha=.5)
 
 h1Rain
-```
-
-## H2 - Scatter Plots
-
-```{r H2Scatter}
-#Scatter Plot; commitment is the composite variable
-#h2Point <- ggplot(data=h2Data,
-#                  aes(x=qoa,
-#                      y=commitment))+
-#  geom_point()+
-#  labs(x="Confidence finding alternatives",
-#       y="Commitment level",
-#       title="Relationship between confidence finding alternatives and commitment level")+
-#  theme_minimal(base_size = 8)
-
-#h2Point
-
-#Plot looks weird... why?
-# They're on top of each other, and because of the composite variable and because qoa is only integers
-#nrow(h2Data) #There's fifty thousand data points, but the graph wasn't showing it
-#nrow(unique(h2Data[,c("qoa","commitment")]))
-
-#Jitter
-#h2Jitter <- ggplot(data=h2Data,
-#                  aes(x=qoa,
-#                      y=commitment))+
-#  geom_jitter(width=.12,height=.04,alpha=.04,size=.6)+
-#    labs(x="Confidence finding alternatives",
-#       y="Commitment level",
-#       title="Relationship between confidence finding alternatives and commitment level")+
-#  theme_minimal(base_size = 8)
-
-#h2Jitter # know where data points are concentrated
-
-```
-
-## H2 - Smooth Line
-
-```{r}
-#Scatter Plot with line
-#h2Line <- h2Jitter + geom_smooth(method= "lm")
-#h2Line
 ```
 
 ## Save figures
@@ -153,7 +108,11 @@ h1Rain
 ```{r saveFigures}
 #Run after creating the plots. Save PNG files in the project's figures folder.
 dir.create("practiceFigures")
+
 ggsave("practiceFigures/H1_figures_rainCloud.png", plot = h1Rain, width=10, height=6, dpi=300)
-ggsave("practiceFigures/H2_figures_line.png",plot = h2Line, width = 10, height=6, dpi= 300)
+
+ggsave("practiceFigures/H1_figures_point.png", plot = h1Point, width=10, height=6, dpi=300)
+
+ggsave("practiceFigures/H2_figures_box.png",plot = h2Box, width = 10, height=6, dpi= 300)
 ```
 
