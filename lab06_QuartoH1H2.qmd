@@ -1,0 +1,108 @@
+---
+title: "Title"
+author: "Sylvie Bass"
+format:
+  html:
+    toc: true #table of contents
+    code-fold: true
+    embed-resources: true
+execute:
+  echo: true
+---
+
+```{r}
+#| label: load-data
+#| include: false
+library(ggplot2)
+library(ggrain)
+
+h1Data <- read.csv("data/processed_data/practice_h1.csv")
+
+h1Data$Sex_birth <- factor(h1Data$Sex_birth,
+                           levels = c("Male", "Female", "Intersex"))
+
+h2Data <- read.csv("data/processed_data/practice_h2.csv")
+```
+
+## Hypothesis 1
+
+The perceived morality of infidelity will effect willingness to marry without love.
+
+### Variables and descriptive statistics
+
+- **Perceived Morality (`percMoral`):** Points allocated to the perceived morality. A composite variable of two measures of reported morality relating to infidelity (infmoral_sex and infmoral_emo) on a Likert scale from 1-7. Perceived wrongness of infidelity: mean of infmoral_sex and infmoral_emo; both responses required. Items range from 1=Not at all wrong to 7=Extremely wrong. No reversal; higher scores indicate greater perceived wrongness.
+
+- **Matrimonial Directedness (`Love_would_you_marry_1`):** Reported willingness to marry without love on a scale of 0 to 100. According to the codebook: Willingness to marry without love: 0=Definitely would not, 100=Definitely would.
+
+```{r}
+#| label: h1-descriptives
+# Count respondents in each group.
+table(h1Data$percMoral)
+table(h1Data$Love_would_you_marry_1)
+
+# Summarize attractiveness points separately for each group.
+by(h1Data$Love_would_you_marry_1, h1Data$percMoral, summary)
+```
+
+### Graph
+
+@fig-moralityOfLove shows the reported morals on infidelity by the reported willingness to marry someone without love. The half-violin shows the shape of the distribution and the dots represent individual responses.
+
+```{r}
+#| label: fig-moralityOfLove
+#| fig-cap: "Inherent Morality of Infidelity's influence on Willingness to Marry"
+#| fig-width: 8
+#| fig-height: 5
+
+h1Rain <- ggplot(data=h1Data,
+                aes(x= factor(percMoral),
+                    y=Love_would_you_marry_1))+
+  labs(x="Morality of Infidelity",
+        y="Willingness to Marry without Love",
+        title="Inherent Morality of Infidelity's influence on Willingness to marry without love")+
+  geom_rain(alpha=.5)
+
+h1Rain
+```
+
+
+## Hypothesis 2
+
+Sex will affect time spent dressing well.
+
+### Variables and descriptive statistics
+
+- **Sex at birth (`Sex_birth`):** A categorical variable with three groups: Male, Female, and Intersex.
+- **Time spent dressing well (`Time_A_dress_1`):** Daily time spent dressing well; 0-360 questionnaire with 360 representing 6 hours or more; zero is valid
+
+```{r}
+#| label: h2-timeDress
+summary(h2Data[,"Time_A_dress_1"])
+
+data$Sex_birth <- factor(data$Sex_birth, 
+                         levels=c(0,1,2),
+                         labels=c("Male","Female","Intersex"))
+```
+
+### Graph
+
+@fig-timeDress shows the relationship between sex at birth and time spent dressing well. The line summarizes the linear trend.
+
+```{r}
+#| label: fig-timeDress
+#| fig-cap: "Relationship between Sex at Birth and Time Spent Dressing Well"
+#| fig-width: 8
+#| fig-height: 5
+
+h2Box <- ggplot(data=h2Data,
+                aes(x=Sex_birth,
+                    y=Time_A_dress_1,
+                    fill=Sex_birth))+
+  geom_boxplot () +
+  labs(x="Sex assigned at birth",
+        y="Amount of time spent on dressing well",
+        title="Time spent dressing well by sex")+
+  theme_gray(base_size=8) #changes font size
+
+h2Box
+```
