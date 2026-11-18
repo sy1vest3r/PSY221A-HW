@@ -16,6 +16,12 @@ H1: The perceived morality of infidelity (IV) will effect willingness to marry w
 H2: Sex (categorical IV) will affect time spent dressing well (DV).
 
 ```{r load package}
+###JK: Use project-relative paths so the graphs also run on another computer. ###
+# Replace the two processed-data reads with:
+# h1Data <- read.csv("data/processed_data/h1.csv")
+# h2Data <- read.csv("data/processed_data/h2.csv")
+###  End of comment ###
+
 library(codebook)
 raw <- read.csv("/Users/srb/R Studio/PSY 221A/PSY221A-HW/lab02_files/data_doctored.csv")
 ```
@@ -64,6 +70,18 @@ h2Box
 #The shape depends on smoothing; integer scores can create bumps.
 
 # The perceived morality of infidelity (IV) will effect willingness to marry without love (DV).
+
+###JK: Match the H1 column names to your CSV and use a scatterplot for these two numeric scores. ###
+# Both H1 variables are continuous, so a scatterplot is a better choice for showing their relationship than a violin or raincloud plot.
+# The example below creates a jittered scatterplot with a trend line. I changed the name h1Rain to h1Point so you'll have to change the save code to use this name.
+# read.csv() imports your columns as Perceived.morality and Willingness.to.marry, instead of moral, willing_marry.
+# For H1, replace the violin and raincloud blocks with this example and keep the name h1Rain so your save code still works:
+# h1Point <- ggplot(h1Data, aes(x = Perceived.morality, y = Willingness.to.marry)) +
+#   geom_jitter(width = .1, height = 0, alpha = .1) +
+#   geom_smooth(method = "lm") +
+#   labs(x = "Perceived moral wrongness of infidelity", y = "Willingness to marry without love") +
+#   theme_minimal()
+###  End of comment ###
 
 h1Viol <- ggplot(data=h1Data,
                 aes(x=moral,
