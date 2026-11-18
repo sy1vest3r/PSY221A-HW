@@ -17,7 +17,6 @@ H1: The perceived morality of infidelity (IV) will effect willingness to marry w
 H2: Sex (categorical IV) will affect time spent dressing well (DV).
 
 ## 1. Load the package and data
-
 ```{r load, message=FALSE}
 #load the codebook package
 library(codebook)
@@ -39,7 +38,6 @@ data <- raw[,c("ResponseId","Sex_birth","infmoral_sex","infmoral_emo","Love_woul
 
 
 ## 2. Check participant IDs
-
 ```{r participant_ids}
 
 #count na
@@ -62,7 +60,6 @@ sum(duplicated(data$ResponseId))
 
 
 ## 3. Recode sex at birth
-
 ```{r sex_at_birth}
 # codebook: 0 = Male, 1 = Female, 2 = Intersex
 table(data$Sex_birth,useNA="ifany")
@@ -79,7 +76,6 @@ table(data$Sex_birth,useNA="ifany")
 
 
 ## 4. Overall Perceived Morality
-
 ```{r percMoral}
 #group two infmoral_sex and infmoral_emo
 summary(data$infmoral_emo)
@@ -136,7 +132,6 @@ sum(duplicated(h2Data$ResponseId))
 ```
 
 ## 6. Validate willingness to marry
-
 ```{r matrimonial directedness}
 # taking a look at the variable
 table(data$Love_would_you_marry_1,useNA="ifany")
