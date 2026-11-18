@@ -29,7 +29,7 @@ library(codebook)
 # raw <- read.csv("lab02_files/data_doctored.csv")
 ###  End of comment ###
 
-raw <- read.csv("~/R Studio/PSY 221A/PSY221A-HW/lab02_files/data_doctored.csv")
+raw <- read.csv("lab02_files/data_doctored.csv")
 
 #check row and column counts, and inspect the first few rows
 
@@ -37,7 +37,9 @@ dim(raw)
 head(raw)
 str(raw)
 
-#make data with ID, sex at birth, two morality items, time spent on dressing, and love opinion would you marry; keep raw unchanged
+#make data with ID, sex at birth, two morality items, time spent on dressing, and willingness to marry
+
+#keep raw unchanged
 
 data <- raw[,c("ResponseId","Sex_birth","infmoral_sex","infmoral_emo","Love_would_you_marry_1","Time_A_dress_1")]
 
@@ -60,6 +62,10 @@ missingID <- which(is.na(data$ResponseId))
 print(data[missingID,])
 #remove the known empty record with no ID, then check the row count
 data <- data[!is.na(data$ResponseId),]
+#check remaining IDs
+sum(is.na(data$ResponseId))
+sum(data$ResponseId == "", na.rm=TRUE)
+sum(duplicated(data$ResponseId))
 
 ```
 
@@ -74,6 +80,9 @@ data$Sex_birth <- factor(data$Sex_birth,
                          levels=c(0,1,2),
                          labels=c("Male","Female","Intersex"))
 
+#check recoding worked
+table(data$Sex_birth,useNA="ifany")
+
 ```
 
 
@@ -86,9 +95,12 @@ summary(data$infmoral_sex)
 table(data$infmoral_sex, useNA="ifany")
 table(data$infmoral_emo, useNA="ifany")
 
+#grouping the perceived morality variables
 percMoralVars <- c("infmoral_sex","infmoral_emo")
-# calculate the 
+# calculate the mean of the two morality
 data$percMoral <- rowMeans(data[,c("infmoral_sex","infmoral_emo")], na.rm = FALSE)
+
+#check overall perceived morality
 summary(data$percMoral)
 
 ```
@@ -106,15 +118,15 @@ missingTime <- which(is.na(data$Time_A_dress_1))
 print(data[missingTime,])
 # removing the known empty NAs
 
+#double-checking that the stored data values are within the bounds of reason (time can only be measured 0-360)
+sum(data$Time_A_dress_1 <0, na.rm = TRUE)
+sum(data$Time_A_dress_1 >360, na.rm = TRUE)
+
 ###JK: Do not remove missing dressing-time responses from the shared data table. ###
 # Dressing time is needed for H2, but it is not needed for H1, which uses infidelity morality and willingness to marry without love.
 # This line also removes 12,065 people who have the H1 responses you need.
 ###  End of comment ###
 
-data <- data[!is.na(data$Time_A_dress_1),]
-#double-checking that the stored data values are within the bounds of reason (time can only be measured 0-360)
-sum(data$Time_A_dress_1 <0, na.rm = TRUE)
-sum(data$Time_A_dress_1 >360, na.rm = TRUE)
 #make h2Data with ID, Sex_birth, and time spent dressing
 table(data$Time_A_dress_1)
 h2Data <- data[!is.na(data$Time_A_dress_1) & !is.na(data$Sex_birth), c("ResponseId","Sex_birth","Time_A_dress_1")]
@@ -124,10 +136,10 @@ head(h2Data)
 str(h2Data)
 summary(h2Data)
 colSums(is.na(h2Data))
+
 table(h2Data$Sex_birth,useNA="ifany")
 range(h2Data$Time_A_dress_1)
 sum(duplicated(h2Data$ResponseId))
-# looks good!!! yay coding
 ```
 
 ## 6. Validate willingness to marry
