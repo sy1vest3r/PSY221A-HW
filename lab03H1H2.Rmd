@@ -115,7 +115,7 @@ sum(data$Time_A_dress_1 >360, na.rm = TRUE)
 ```
 
 ## 5a. Make H2 Data
-```{make_h2Data}
+```{r make_h2Data}
 #make h2Data with ID, Sex_birth, and time spent dressing
 table(data$Time_A_dress_1)
 h2Data <- data[!is.na(data$Time_A_dress_1) & !is.na(data$Sex_birth), c("ResponseId","Sex_birth","Time_A_dress_1")]
