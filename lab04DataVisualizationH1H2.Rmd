@@ -16,26 +16,23 @@ H1: The perceived morality of infidelity (IV) will effect willingness to marry w
 H2: Sex (categorical IV) will affect time spent dressing well (DV).
 
 ```{r load package}
-###JK: Use project-relative paths so the graphs also run on another computer. ###
-# Replace the two processed-data reads with:
-# h1Data <- read.csv("data/processed_data/h1.csv")
-# h2Data <- read.csv("data/processed_data/h2.csv")
-###  End of comment ###
 
+library(ggplot2)
+library(ggrain)
+install.packages("ggrain")
 library(codebook)
-raw <- read.csv("/Users/srb/R Studio/PSY 221A/PSY221A-HW/lab02_files/data_doctored.csv")
+
 ```
 
 ## Load the processed data
 
 ```{r loadData}
-#load processed data
-library(ggplot2)
-library(ggrain)
-install.packages("ggrain")
 
-h1Data <- read.csv("/Users/srb/R Studio/PSY 221A/PSY221A-HW/data/processed_data/h1.csv")
-h2Data <- read.csv("/Users/srb/R Studio/PSY 221A//PSY221A-HW/data/processed_data/h2.csv")
+#load processed data 
+
+h1Data <- read.csv("data/processed_data/h1.csv")
+h2Data <- read.csv("data/processed_data/h2.csv")
+
 #reorganize categorical variable
 table(h2Data$Sex_birth)
 h2Data$Sex_birth <- factor(h2Data$Sex_birth,
@@ -68,7 +65,6 @@ h2Box
 #Violin Plot
 #Wider sections show where responses are more concentrated within each group.
 #The shape depends on smoothing; integer scores can create bumps.
-
 # The perceived morality of infidelity (IV) will effect willingness to marry without love (DV).
 
 ###JK: Match the H1 column names to your CSV and use a scatterplot for these two numeric scores. ###
@@ -76,26 +72,17 @@ h2Box
 # The example below creates a jittered scatterplot with a trend line. I changed the name h1Rain to h1Point so you'll have to change the save code to use this name.
 # read.csv() imports your columns as Perceived.morality and Willingness.to.marry, instead of moral, willing_marry.
 # For H1, replace the violin and raincloud blocks with this example and keep the name h1Rain so your save code still works:
-# h1Point <- ggplot(h1Data, aes(x = Perceived.morality, y = Willingness.to.marry)) +
-#   geom_jitter(width = .1, height = 0, alpha = .1) +
-#   geom_smooth(method = "lm") +
-#   labs(x = "Perceived moral wrongness of infidelity", y = "Willingness to marry without love") +
-#   theme_minimal()
-###  End of comment ###
-
-h1Viol <- ggplot(data=h1Data,
-                aes(x=moral,
-                    y=willing_marry,
-                    fill=moral))+
-  labs(x="Morality of Infidelity",
-        y="Willingness to Marry without Love",
-        title="Inherent Morality of Infidelity's influence on Willingness to marry without love")+
-  theme_gray(base_size=8)+
-  geom_violin()+ #order doesn't usually matter
-  geom_boxplot(width=.12)
 
 
-h1Viol
+h1Point <- ggplot(data=h1Data, 
+                   aes(x = Perceived.morality, 
+                       y = Willingness.to.marry,
+                     title="Inherent Morality of Infidelity's influence on Willingness to marry without love")) +
+   geom_jitter(width = .1, height = 0, alpha = .1) +
+   geom_smooth(method = "lm") +
+   labs(x = "Perceived moral wrongness of infidelity", y = "Willingness to marry without love") +  theme_minimal()
+
+h1Point
 ```
 
 ## H1 - Raincloud Plot
@@ -167,8 +154,6 @@ h1Rain
 #Run after creating the plots. Save PNG files in the project's figures folder.
 dir.create("practiceFigures")
 ggsave("practiceFigures/H1_figures_rainCloud.png", plot = h1Rain, width=10, height=6, dpi=300)
-ggsave("practiceFigures/H2_figures_boxPlot.png",plot = h2Box, width = 10, height=6, dpi= 300)
-
-#ggsave("practiceFigures/H2_figures_line.png", plot = h2Line, width=10, height=6, dpi=300)
+ggsave("practiceFigures/H2_figures_line.png",plot = h2Line, width = 10, height=6, dpi= 300)
 ```
 
