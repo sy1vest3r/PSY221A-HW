@@ -16,12 +16,17 @@ execute:
 library(ggplot2)
 library(ggrain)
 
-h1Data <- read.csv("data/processed_data/practice_h1.csv")
+#h1Data <- read.csv("~/data/processed_data/h1.csv")
+# For me to switch to when my working directory is weird:
+h1Data <- read.csv("/Users/srb/R Studio/PSY 221A/PSY221A-HW/PSY221A-HW/data/processed_data/h1.csv")
 
-h1Data$Sex_birth <- factor(h1Data$Sex_birth,
-                           levels = c("Male", "Female", "Intersex"))
+#h1Data$Sex_birth <- factor(h1Data$Sex_birth,
+#                           levels = c("Male", "Female", "Intersex"))
 
-h2Data <- read.csv("data/processed_data/practice_h2.csv")
+#h2Data <- read.csv("~/data/processed_data/h2.csv")
+# For me to switch to when my working directory is weird:
+h2Data <- read.csv("/Users/srb/R Studio/PSY 221A/PSY221A-HW/PSY221A-HW/data/processed_data/h2.csv")
+
 ```
 
 ## Hypothesis 1
@@ -79,9 +84,9 @@ Sex will affect time spent dressing well.
 #| label: h2-timeDress
 summary(h2Data[,"Time_A_dress_1"])
 
-data$Sex_birth <- factor(data$Sex_birth, 
-                         levels=c(0,1,2),
-                         labels=c("Male","Female","Intersex"))
+#data$Sex_birth <- factor(data$Sex_birth, 
+#                         levels=c(0,1,2),
+#                         labels=c("Male","Female","Intersex"))
 ```
 
 ### Graph
