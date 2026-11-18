@@ -1,5 +1,5 @@
 ---
-title: "Title"
+title: "Diving into how the perceived morality of infidelity will affect willingness to marry without love and if sex at birth is related to time spent dressing well."
 author: "Sylvie Bass"
 format:
   html:
@@ -45,6 +45,7 @@ The perceived morality of infidelity will effect willingness to marry without lo
 table(h1Data$percMoral)
 table(h1Data$Love_would_you_marry_1)
 
+#| label: h1-descriptives
 # Summarize attractiveness points separately for each group.
 by(h1Data$Love_would_you_marry_1, h1Data$percMoral, summary)
 ```
