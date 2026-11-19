@@ -10,25 +10,11 @@ execute:
   echo: true
 ---
 
-###JK: Submit the descriptive-statistics code separately and finish publishing your own report. ###
-# I still could not find a separate descriptive-statistics assignment. Add an Rmd or R script summarizing the continuous variables in your hypotheses.
-# I could not open the project website on November 19. Put the HTML for this report at docs/index.html, then select main and /docs in Settings > Pages.
-# Your own report is currently named docs/lab06_QuartoH1H2 copy.html, while a different example is at docx/index.html.
-###  End of comment ###
-
-
 ```{r}
 #| label: load-data
 #| include: false
 library(ggplot2)
 library(ggrain)
-
-###JK: Use project-relative CSV paths so this report renders from the cloned project. ###
-# Replace the two personal /Users/srb/... reads with:
-# h1Data <- read.csv("data/processed_data/h1.csv")
-# h2Data <- read.csv("data/processed_data/h2.csv")
-# These paths work with this QMD in the project folder. The current personal paths stop Render on another computer.
-###  End of comment ###
 
 #h1Data <- read.csv("~/data/processed_data/h1.csv")
 # For me to switch to when my working directory is weird:
@@ -73,11 +59,6 @@ by(h1Data$Love_would_you_marry_1, h1Data$percMoral, summary)
 #| fig-cap: "Inherent Morality of Infidelity's influence on Willingness to Marry"
 #| fig-width: 8
 #| fig-height: 5
-
-###JK: Use your corrected H1 scatterplot in the Quarto report too. ###
-# Both H1 variables are continuous. Reuse the scatterplot from your revised visualization script so the report shows their relationship on the original numerical scales.
-# The H2 boxplot is appropriate for sex-at-birth groups and dressing time.
-###  End of comment ###
 
 h1Rain <- ggplot(data=h1Data,
                 aes(x= factor(percMoral),
