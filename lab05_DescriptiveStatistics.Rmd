@@ -1,0 +1,126 @@
+---
+title: "PSY221A: Descriptive Statistics"
+output: html_document
+---
+
+## 1. Load the processed data
+
+```{r load}
+# Open the project's .Rproj file before running chunks.
+# Install psych once in the Console if needed:
+install.packages("psych")
+
+
+h1data <- read.csv("data/processed_data/h1.csv")
+h2data <- read.csv("data/processed_data/h2.csv")
+
+```
+
+## 2. Look at the distribution first
+
+```{r histogram}
+# A histogram groups numerical values into intervals (bins).
+# Bar height shows how many observations fall in each interval.
+# Start by looking at the distribution before calculating summary statistics.
+hist(h1Data$Love_would_you_marry_1)
+hist(h1Data$percMoral)
+hist(h2Data$Time_A_dress_1)
+
+# Add readable labels to the same histogram.
+hist(h1Data$Love_would_you_marry_1,
+     main = "Distribution of willingness to marry without love",
+     xlab = "Willingness to marry without love (0-100)")
+
+hist(h1Data$percMoral,
+     main = "Distribution of perceived morality",
+     xlab = "Perceived relationship morality (1-7)")
+
+hist(h2Data$Time_A_dress_1,
+     main = "Distribution of timing spent dressing well",
+     xlab = "Time spent dressing well (0-360)")
+
+```
+
+## 3. One statistic at a time
+
+```{r individual_statistics}
+# Mean: add the scores and divide by the number of observed responses.
+mean(h1Data$Love_would_you_marry_1, na.rm = TRUE)
+mean(h1Data$percMoral, na.rm = TRUE)
+mean(h2Data$Time_A_dress_1, na.rm = TRUE)
+
+# Median: the middle score after sorting the responses.
+median(h1Data$Love_would_you_marry_1, na.rm = TRUE)
+median(h1Data$percMoral, na.rm = TRUE)
+median(h2Data$Time_A_dress_1, na.rm = TRUE)
+
+# Table: count how many people are in each category.
+table(h2Data$Sex_birth, useNA = "ifany")
+
+# Range: return the minimum and maximum, rather than their difference.
+range(h1Data$Love_would_you_marry_1, na.rm = TRUE)
+range(h1Data$percMoral, na.rm = TRUE)
+range(h2Data$Time_A_dress_1, na.rm = TRUE)
+
+# IQR: the 75th percentile minus the 25th percentile.
+IQR(h1Data$Love_would_you_marry_1, na.rm = TRUE)
+IQR(h1Data$percMoral, na.rm = TRUE)
+IQR(h2Data$Time_A_dress_1, na.rm = TRUE)
+```
+
+## 4. Standardize a variable
+
+```{r standardize}
+# scale() uses z = (original score - mean) / standard deviation by default.
+# Keep the original commitment scores and store the standardized values separately.
+# scale() returns a matrix; as.numeric() makes a simple numeric column.
+h2Data$TimeDressZ <- as.numeric(scale(h2Data$Time_A_dress_1))
+head(h2Data[, c("Time_A_dress_1", "TimeDressZ")])
+
+h1Data$percmoralZ <- as.numeric(scale(h1Data$percMoral))
+head(h1Data[, c("percMoral", "perMoralZ")])
+
+h1Data$willingnessloveZ <- as.numeric(scale(h1Data$Love_would_you_marry_1))
+head(h1Data[, c("Love_would_you_marry_1", "willingnessloveZ")])
+
+# Standardized scores have mean approximately 0 and standard deviation 1.
+mean(h2Data$TimeDressZ, na.rm = TRUE)
+sd(h2Data$TimeDressZ, na.rm = TRUE)
+
+mean(h1Data$percmoralZ, na.rm = TRUE)
+sd(h1Data$percmoralZ, na.rm = TRUE)
+
+mean(h1Data$willingnessloveZ, na.rm = TRUE)
+sd(h1Data$willingnessloveZ, na.rm = TRUE)
+
+```
+
+## 5. Covariance and correlation
+
+```{r association}
+# Covariance describes whether two variables tend to move together.
+# Positive: higher values tend to occur together. Negative: higher values tend to accompany lower values.
+# Its size depends on the units and is not restricted to -1 through 1.
+cov(h1Data$Love_would_you_marry_1, h1Data$percMoral, use = "complete.obs")
+
+# Pearson correlation expresses a linear association on a -1 to 1 scale.
+cor(h1Data$Love_would_you_marry_1, h1Data$percMoral, use = "complete.obs")
+
+# Select numerical variables only; do not include participant IDs or category codes.
+corData <- h1Data[, c("Love_would_you_marry_1", "percMoral")]
+
+# A correlation matrix gives the correlation for each pair of columns.
+# The diagonal is 1 because each variable is correlated with itself.
+cor(corData, use = "complete.obs")
+```
+
+## 6. Several statistics at once
+
+```{r combined_summaries}
+# summary() reports minimum, quartiles, median, mean, maximum, and missing counts when present.
+summary(corData)
+
+# psych::describe() reports n, mean, SD, median, minimum, maximum, range width (max minus min), skewness, kurtosis, and other summaries.
+# However it does not report every statistic above: compute IQR, cov(), and cor() separately.
+```
+
