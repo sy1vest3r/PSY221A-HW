@@ -1,0 +1,80 @@
+---
+title: "PSY221A: Correlation, t-test, and ANOVA"
+output: html_document
+---
+
+## 1. Load the processed data
+
+```{r load}
+# Open the project's .Rproj file before running chunks.
+
+h1Data <- read.csv("data/processed_data/h1.csv")
+h2Data <- read.csv("data/processed_data/h2.csv")
+
+# Check the variable types, missing values, and group sizes.
+str(h1Data)
+str(h2Data)
+table(h2Data$Sex_birth, useNA = "ifany")
+
+```
+
+## 2. H2: Correlation
+
+```{r correlation}
+# cor() gives the correlation coefficient
+cor(h1Data$percMoral, h1Data$Love_would_you_marry_1)
+
+# cor.test() gives a hypothesis test and a confidence interval for two continuous intervals.
+# The default is a two-sided Pearson correlation test.
+# The null hypothesis is that the population correlation is zero.
+cor.test(h1Data$percMoral, h1Data$Love_would_you_marry_1)
+
+# The 95% confidence interval describes uncertainty about the population correlation.
+```
+
+## 3. H1: Independent-samples t-test
+
+```{r t_test for Sex_birth with only Male and Female}
+# For t-test, we will compare Male and Female respondents only.
+# Keep the original h1Data unchanged.
+h2Data$Sex_birth <- factor(h2Data$Sex_birth,
+                           levels= c("Male","Female","Intersex"))
+
+h2Ttest <- h2Data[h2Data$Sex_birth %in% c("Male","Female"),]
+
+# Check the groups and their descriptive statistics before testing.
+table(h2Ttest$Sex_birth)
+by(h2Ttest$Time_A_dress_1, h2Ttest$Sex_birth, mean)
+
+# The null hypothesis is that the two population means are equal.
+# Conduct independent sample t-test
+t.test(Time_A_dress_1 ~ Sex_birth, data=h2Ttest) # Outcome variable first
+
+# Read the group means to see which group allocated more points on average.
+# t is the test statistic, df is the degrees of freedom, and p-value evaluates the null hypothesis.
+```
+
+## 4. H1: One-way ANOVA
+
+```{r anova}
+# Return to h1Data to compare Male, Female, and Intersex respondents.
+by(h2Ttest$Time_A_dress_1, h2Ttest$Sex_birth, mean)
+
+# The null hypothesis is that all three population means are equal.
+# Save the ANOVA model, then use summary() to display the ANOVA table.
+h2Anova <- aov(Time_A_dress_1 ~ Sex_birth, data=h2Data)
+
+# A significant result indicates that at least one population mean differs.
+```
+
+## 5. Which groups differ?
+
+```{r post_hoc}
+# After ANOVA, Tukey's test compares each pair of groups while adjusting for multiple comparisons.
+tuk <- TukeyHSD(h2Anova)
+options(width = 120, digits = 15) # Looked up adjusted options since it was so significant R was cutting it off!
+print(tuk)
+
+# diff is the first named group's mean minus the second named group's mean in each comparison label.
+# lwr and upr are the confidence limits; p adj is the adjusted p-value.
+```
